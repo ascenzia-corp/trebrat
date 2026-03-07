@@ -34,7 +34,10 @@ export default function TabBar() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  if (!role) return null;
+  // Hide TabBar on full-screen pages like the inspection wizard
+  const isFullScreen = location.pathname.match(/^\/inspection\/[^/]+$/);
+
+  if (!role || isFullScreen) return null;
   const tabs = tabsByRole[role];
 
   return (

@@ -105,7 +105,7 @@ export default function ReservationDetailPage() {
           <Card>
             <div className="space-y-1 divide-y divide-ios-separator/30">
               <Toggle label="🔑 Clef cachée" checked={reservation.key_hidden} onChange={(v) => handleToggle('key_hidden', v)} />
-              <Toggle label="🧹 Ménage fait" checked={reservation.cleaning_done} onChange={(v) => handleToggle('cleaning_done', v)} />
+              <Toggle label="🧹 Ménage à faire" checked={reservation.cleaning_done} onChange={(v) => handleToggle('cleaning_done', v)} />
               <Toggle label="📋 État des lieux réalisé" checked={reservation.inspection_done} onChange={(v) => handleToggle('inspection_done', v)} />
             </div>
           </Card>

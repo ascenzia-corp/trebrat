@@ -29,6 +29,7 @@ export default function InspectionWizardPage() {
   const [saving, setSaving] = useState(false);
   const [lightboxPhoto, setLightboxPhoto] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const savingRef = useRef(false);
 
   // Load existing inspection data
   useEffect(() => {
@@ -57,19 +58,30 @@ export default function InspectionWizardPage() {
   const state = roomStates[currentRoom.id] || { comment: '', status: 'ok' as InspectionStatus, photos: [], purchaseItem: '' };
 
   const updateState = (updates: Partial<RoomState>) => {
-    setRoomStates(prev => ({
-      ...prev,
-      [currentRoom.id]: { ...state, ...updates },
-    }));
+    setRoomStates(prev => {
+      const current = prev[currentRoom.id] || { comment: '', status: 'ok' as InspectionStatus, photos: [], purchaseItem: '' };
+      return {
+        ...prev,
+        [currentRoom.id]: { ...current, ...updates },
+      };
+    });
   };
 
   const handlePhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
-    for (const file of Array.from(files)) {
-      const url = URL.createObjectURL(file);
-      updateState({ photos: [...state.photos, { file, url, caption: '' }] });
-    }
+    const newPhotos = Array.from(files).map(file => ({
+      file,
+      url: URL.createObjectURL(file),
+      caption: '',
+    }));
+    setRoomStates(prev => {
+      const current = prev[currentRoom.id] || { comment: '', status: 'ok' as InspectionStatus, photos: [], purchaseItem: '' };
+      return {
+        ...prev,
+        [currentRoom.id]: { ...current, photos: [...current.photos, ...newPhotos] },
+      };
+    });
     e.target.value = '';
   };
 
@@ -80,7 +92,8 @@ export default function InspectionWizardPage() {
   };
 
   const handleFinish = async () => {
-    if (!reservationId || !user) return;
+    if (!reservationId || !user || savingRef.current) return;
+    savingRef.current = true;
     setSaving(true);
     try {
       for (const room of rooms) {
@@ -144,6 +157,7 @@ export default function InspectionWizardPage() {
     } catch (err) {
       console.error('Error saving inspection:', err);
     } finally {
+      savingRef.current = false;
       setSaving(false);
     }
   };
