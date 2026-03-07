@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Users, Key, Sparkles, ClipboardCheck, Calendar as CalendarIcon, List } from 'lucide-react';
+import { Plus, Users, Calendar as CalendarIcon, List } from 'lucide-react';
 import NavBar from '../components/layout/NavBar';
 import PageContainer from '../components/layout/PageContainer';
 import Card from '../components/ui/Card';
@@ -14,7 +14,7 @@ import Button from '../components/ui/Button';
 import { useReservations } from '../hooks/useReservations';
 import { createAutoTasks } from '../hooks/useTasks';
 import type { Reservation, ReservationStatus } from '../types';
-import { format, parseISO, isToday, isFuture, isPast } from 'date-fns';
+import { format, parseISO, isToday } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 const statusConfig: Record<ReservationStatus, { color: 'blue' | 'green' | 'gray' | 'red'; label: string }> = {

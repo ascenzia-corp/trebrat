@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import NavBar from '../components/layout/NavBar';
 import PageContainer from '../components/layout/PageContainer';
 import Card from '../components/ui/Card';

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Phone, Users, Trash2, Plus } from 'lucide-react';
 import NavBar from '../components/layout/NavBar';

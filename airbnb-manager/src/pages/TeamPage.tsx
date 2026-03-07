@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Users, UserPlus, Shield, Brush, Wrench } from 'lucide-react';
+import { useState } from 'react';
+import { UserPlus, Shield, Brush, Wrench } from 'lucide-react';
 import NavBar from '../components/layout/NavBar';
 import PageContainer from '../components/layout/PageContainer';
 import Card from '../components/ui/Card';

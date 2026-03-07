@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Camera, ChevronLeft, ChevronRight, X, Check, AlertTriangle, ShoppingCart } from 'lucide-react';
 import Button from '../components/ui/Button';
@@ -8,8 +8,8 @@ import Spinner from '../components/ui/Spinner';
 import { useRooms } from '../hooks/useRooms';
 import { useAuthStore } from '../stores/authStore';
 import { supabase } from '../lib/supabase';
-import { compressImage, uploadPhoto } from '../lib/image-utils';
-import type { Room, InspectionStatus, InspectionItem, InspectionPhoto } from '../types';
+import { uploadPhoto } from '../lib/image-utils';
+import type { InspectionStatus, InspectionItem, InspectionPhoto } from '../types';
 
 interface RoomState {
   comment: string;

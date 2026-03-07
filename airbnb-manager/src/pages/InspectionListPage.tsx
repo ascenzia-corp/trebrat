@@ -1,4 +1,3 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ClipboardCheck, ClipboardList } from 'lucide-react';
 import NavBar from '../components/layout/NavBar';

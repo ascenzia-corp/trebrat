@@ -1,16 +1,13 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { AlertTriangle, ShoppingCart, Send } from 'lucide-react';
 import NavBar from '../components/layout/NavBar';
 import PageContainer from '../components/layout/PageContainer';
-import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
 import { TextArea } from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import { supabase } from '../lib/supabase';
-import { useAuthStore } from '../stores/authStore';
 
 export default function ReportPage() {
-  const user = useAuthStore((s) => s.user);
   const [type, setType] = useState<'issue' | 'purchase'>('issue');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
