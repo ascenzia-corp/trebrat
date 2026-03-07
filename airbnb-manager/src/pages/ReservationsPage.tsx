@@ -211,7 +211,8 @@ export default function ReservationsPage() {
 
       <button
         onClick={() => setShowForm(true)}
-        className="fixed bottom-[calc(83px+var(--sab,0px)+16px)] right-4 w-14 h-14 bg-ios-primary text-white rounded-full shadow-lg flex items-center justify-center active:scale-95 transition-transform z-30"
+        className="fixed right-4 w-14 h-14 bg-ios-primary text-white rounded-full shadow-lg flex items-center justify-center active:scale-95 transition-transform z-50"
+        style={{ bottom: 'calc(65px + var(--sab, 0px) + 16px)' }}
         aria-label="Ajouter une réservation"
       >
         <Plus size={28} />

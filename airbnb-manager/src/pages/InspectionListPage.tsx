@@ -26,7 +26,7 @@ export default function InspectionListPage() {
         ) : (
           <div className="px-4 space-y-2 pb-4">
             {activeReservations.map((r) => (
-              <Card key={r.id} onClick={() => navigate(`/inspection/${r.id}`)} className="fade-in">
+              <Card key={r.id} onClick={() => navigate(`/reservations/${r.id}`)} className="fade-in">
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-[17px] font-medium">{r.guest_name}</h3>
