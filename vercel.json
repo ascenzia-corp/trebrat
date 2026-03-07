@@ -1,0 +1,8 @@
+{
+  "buildCommand": "cd airbnb-manager && npm install && npm run build",
+  "outputDirectory": "airbnb-manager/dist",
+  "framework": "vite",
+  "rewrites": [
+    { "source": "/((?!assets/).*)", "destination": "/index.html" }
+  ]
+}
