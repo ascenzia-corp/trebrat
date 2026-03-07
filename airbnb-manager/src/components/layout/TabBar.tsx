@@ -19,11 +19,13 @@ const tabsByRole: Record<UserRole, TabItem[]> = {
     { path: '/team', label: 'Équipe', icon: <Users size={24} /> },
   ],
   cleaning: [
+    { path: '/reservations', label: 'Locations', icon: <Calendar size={24} /> },
     { path: '/tasks', label: 'Mes tâches', icon: <CheckSquare size={24} /> },
     { path: '/inspection', label: 'État des lieux', icon: <ClipboardList size={24} /> },
     { path: '/report', label: 'Signaler', icon: <AlertTriangle size={24} /> },
   ],
   maintenance: [
+    { path: '/reservations', label: 'Locations', icon: <Calendar size={24} /> },
     { path: '/purchases', label: 'Achats', icon: <ShoppingCart size={24} /> },
     { path: '/tasks', label: 'Mes tâches', icon: <CheckSquare size={24} /> },
   ],

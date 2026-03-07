@@ -19,14 +19,7 @@ function AppRoutes() {
   const { profile } = useAuthStore();
   const role = profile?.role;
 
-  const getDefaultRoute = () => {
-    switch (role) {
-      case 'owner': return '/reservations';
-      case 'cleaning': return '/tasks';
-      case 'maintenance': return '/purchases';
-      default: return '/tasks';
-    }
-  };
+  const getDefaultRoute = () => '/reservations';
 
   return (
     <div className="h-full flex flex-col bg-ios-bg">
