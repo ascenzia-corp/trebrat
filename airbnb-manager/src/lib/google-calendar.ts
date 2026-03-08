@@ -91,11 +91,11 @@ export async function syncReservationToCalendar(reservation: Reservation): Promi
       `Téléphone: ${reservation.guest_phone || 'N/A'}`,
     ].join('\n'),
     start: {
-      dateTime: `${reservation.checkin_date}T${reservation.checkin_time}:00`,
+      dateTime: `${reservation.checkin_date}T${reservation.checkin_time.substring(0, 5)}:00`,
       timeZone: 'Europe/Paris',
     },
     end: {
-      dateTime: `${reservation.checkout_date}T${reservation.checkout_time}:00`,
+      dateTime: `${reservation.checkout_date}T${reservation.checkout_time.substring(0, 5)}:00`,
       timeZone: 'Europe/Paris',
     },
   };
