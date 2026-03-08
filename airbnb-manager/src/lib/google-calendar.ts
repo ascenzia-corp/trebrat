@@ -50,13 +50,6 @@ async function refreshAccessToken(settings: CalendarSettings): Promise<string | 
   }
 }
 
-async function getValidAccessToken(settings: CalendarSettings): Promise<string | null> {
-  if (!settings.google_access_token) return null;
-
-  // Try with current token first — if it fails with 401, refresh
-  return settings.google_access_token;
-}
-
 async function calendarFetch(
   url: string,
   options: RequestInit,
