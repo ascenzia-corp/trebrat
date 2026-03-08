@@ -24,6 +24,12 @@ export interface Reservation {
   key_hidden: boolean;
   cleaning_done: boolean;
   inspection_done: boolean;
+  cleaning_checkin: boolean;
+  cleaning_checkin_by: string | null;
+  cleaning_checkout: boolean;
+  cleaning_checkout_by: string | null;
+  beds_to_make: boolean;
+  beds_to_make_by: string | null;
   status: ReservationStatus;
   notes: string | null;
   google_event_id: string | null;

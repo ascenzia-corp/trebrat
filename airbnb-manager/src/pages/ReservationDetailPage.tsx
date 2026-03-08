@@ -31,8 +31,26 @@ function InspectionTab({
 }) {
   const okCount = items.filter(i => i.status === 'ok').length;
   const issueCount = items.filter(i => i.status !== 'ok').length;
-  const existingName = items.find(i => i.inspector_name)?.inspector_name;
-  const [name, setName] = useState(existingName || '');
+  const existingName = items.find(i => i.inspector_name)?.inspector_name || '';
+  const [name, setName] = useState(existingName);
+
+  // Keep local state in sync when items change (e.g. after navigation back)
+  useEffect(() => {
+    const saved = items.find(i => i.inspector_name)?.inspector_name || '';
+    if (saved) setName(saved);
+  }, [items]);
+
+  const handleNameChange = async (newName: string) => {
+    setName(newName);
+    // Persist inspector name to all existing inspection items
+    if (items.length > 0) {
+      const ids = items.map(i => i.id);
+      await supabase
+        .from('inspection_items')
+        .update({ inspector_name: newName || null })
+        .in('id', ids);
+    }
+  };
 
   return (
     <div className="space-y-3">
@@ -40,7 +58,7 @@ function InspectionTab({
         <label className="block text-[13px] text-ios-text-secondary font-medium uppercase tracking-wide mb-1">Réalisé par</label>
         <select
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={(e) => handleNameChange(e.target.value)}
           className="w-full h-[44px] px-4 rounded-[10px] bg-ios-bg text-[17px] text-ios-text"
         >
           <option value="">— Choisir un inspecteur —</option>
@@ -168,7 +186,85 @@ export default function ReservationDetailPage() {
           <Card>
             <div className="space-y-1 divide-y divide-ios-separator/30">
               <Toggle label="🔑 Clef cachée" checked={reservation.key_hidden} onChange={(v) => handleToggle('key_hidden', v)} />
-              <Toggle label="🧹 Ménage à faire" checked={reservation.cleaning_done} onChange={(v) => handleToggle('cleaning_done', v)} />
+
+              {/* Ménage à l'entrée */}
+              <div>
+                <Toggle label="🧹 Ménage à l'entrée" checked={reservation.cleaning_checkin} onChange={async (v) => {
+                  const updates: Partial<typeof reservation> = { cleaning_checkin: v };
+                  if (!v) updates.cleaning_checkin_by = null;
+                  await update(reservation.id, updates);
+                  setReservation({ ...reservation, ...updates });
+                }} />
+                {reservation.cleaning_checkin && (
+                  <select
+                    value={reservation.cleaning_checkin_by || ''}
+                    onChange={async (e) => {
+                      const val = e.target.value || null;
+                      await update(reservation.id, { cleaning_checkin_by: val });
+                      setReservation({ ...reservation, cleaning_checkin_by: val });
+                    }}
+                    className="w-full h-[44px] px-4 mb-2 rounded-[10px] bg-ios-bg text-[17px] text-ios-text"
+                  >
+                    <option value="">— Qui ? —</option>
+                    {members.map((m) => (
+                      <option key={m.id} value={m.full_name}>{m.full_name}</option>
+                    ))}
+                  </select>
+                )}
+              </div>
+
+              {/* Ménage à la sortie */}
+              <div>
+                <Toggle label="🧹 Ménage à la sortie" checked={reservation.cleaning_checkout} onChange={async (v) => {
+                  const updates: Partial<typeof reservation> = { cleaning_checkout: v };
+                  if (!v) updates.cleaning_checkout_by = null;
+                  await update(reservation.id, updates);
+                  setReservation({ ...reservation, ...updates });
+                }} />
+                {reservation.cleaning_checkout && (
+                  <select
+                    value={reservation.cleaning_checkout_by || ''}
+                    onChange={async (e) => {
+                      const val = e.target.value || null;
+                      await update(reservation.id, { cleaning_checkout_by: val });
+                      setReservation({ ...reservation, cleaning_checkout_by: val });
+                    }}
+                    className="w-full h-[44px] px-4 mb-2 rounded-[10px] bg-ios-bg text-[17px] text-ios-text"
+                  >
+                    <option value="">— Qui ? —</option>
+                    {members.map((m) => (
+                      <option key={m.id} value={m.full_name}>{m.full_name}</option>
+                    ))}
+                  </select>
+                )}
+              </div>
+
+              {/* Lits à faire */}
+              <div>
+                <Toggle label="🛏️ Lits à faire" checked={reservation.beds_to_make} onChange={async (v) => {
+                  const updates: Partial<typeof reservation> = { beds_to_make: v };
+                  if (!v) updates.beds_to_make_by = null;
+                  await update(reservation.id, updates);
+                  setReservation({ ...reservation, ...updates });
+                }} />
+                {reservation.beds_to_make && (
+                  <select
+                    value={reservation.beds_to_make_by || ''}
+                    onChange={async (e) => {
+                      const val = e.target.value || null;
+                      await update(reservation.id, { beds_to_make_by: val });
+                      setReservation({ ...reservation, beds_to_make_by: val });
+                    }}
+                    className="w-full h-[44px] px-4 mb-2 rounded-[10px] bg-ios-bg text-[17px] text-ios-text"
+                  >
+                    <option value="">— Qui ? —</option>
+                    {members.map((m) => (
+                      <option key={m.id} value={m.full_name}>{m.full_name}</option>
+                    ))}
+                  </select>
+                )}
+              </div>
+
               <Toggle label="📋 État des lieux réalisé" checked={reservation.inspection_done} onChange={(v) => handleToggle('inspection_done', v)} />
             </div>
           </Card>

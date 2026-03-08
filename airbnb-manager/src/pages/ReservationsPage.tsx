@@ -12,6 +12,7 @@ import Input from '../components/ui/Input';
 import { TextArea } from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import { useReservations } from '../hooks/useReservations';
+import { useTeam } from '../hooks/useTeam';
 import { createAutoTasks } from '../hooks/useTasks';
 import { syncReservationToCalendar } from '../lib/google-calendar';
 import { supabase } from '../lib/supabase';
@@ -133,6 +134,7 @@ function CalendarView({ reservations, onSelect }: { reservations: Reservation[];
 export default function ReservationsPage() {
   const navigate = useNavigate();
   const { reservations, loading, create } = useReservations();
+  const { members } = useTeam();
   const [showForm, setShowForm] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
   const [form, setForm] = useState({
@@ -144,6 +146,12 @@ export default function ReservationsPage() {
     checkout_date: '',
     checkout_time: '11:00',
     notes: '',
+    cleaning_checkin: false,
+    cleaning_checkin_by: '',
+    cleaning_checkout: false,
+    cleaning_checkout_by: '',
+    beds_to_make: false,
+    beds_to_make_by: '',
   });
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -159,6 +167,12 @@ export default function ReservationsPage() {
         checkout_time: form.checkout_time,
         notes: form.notes || null,
         status: 'upcoming',
+        cleaning_checkin: form.cleaning_checkin,
+        cleaning_checkin_by: form.cleaning_checkin_by || null,
+        cleaning_checkout: form.cleaning_checkout,
+        cleaning_checkout_by: form.cleaning_checkout_by || null,
+        beds_to_make: form.beds_to_make,
+        beds_to_make_by: form.beds_to_make_by || null,
       });
       await createAutoTasks(reservation.id, reservation.guest_name, reservation.checkin_date, reservation.checkout_date);
       // Sync to Google Calendar (non-blocking)
@@ -168,7 +182,7 @@ export default function ReservationsPage() {
         }
       }).catch(() => {});
       setShowForm(false);
-      setForm({ guest_name: '', guest_phone: '', guest_count: '', checkin_date: '', checkin_time: '16:00', checkout_date: '', checkout_time: '11:00', notes: '' });
+      setForm({ guest_name: '', guest_phone: '', guest_count: '', checkin_date: '', checkin_time: '16:00', checkout_date: '', checkout_time: '11:00', notes: '', cleaning_checkin: false, cleaning_checkin_by: '', cleaning_checkout: false, cleaning_checkout_by: '', beds_to_make: false, beds_to_make_by: '' });
     } catch (err) {
       console.error(err);
     }
@@ -239,6 +253,81 @@ export default function ReservationsPage() {
             <Input label="Check-out" type="date" value={form.checkout_date} onChange={(e) => setForm(f => ({ ...f, checkout_date: e.target.value }))} required />
             <Input label="Heure" type="time" value={form.checkout_time} onChange={(e) => setForm(f => ({ ...f, checkout_time: e.target.value }))} />
           </div>
+          {/* Ménage à l'entrée */}
+          <div className="space-y-2">
+            <label className="flex items-center justify-between min-h-[44px] cursor-pointer">
+              <span className="text-[17px] text-ios-text">🧹 Ménage à l'entrée</span>
+              <input
+                type="checkbox"
+                className="ios-toggle"
+                checked={form.cleaning_checkin}
+                onChange={(e) => setForm(f => ({ ...f, cleaning_checkin: e.target.checked, cleaning_checkin_by: e.target.checked ? f.cleaning_checkin_by : '' }))}
+              />
+            </label>
+            {form.cleaning_checkin && (
+              <select
+                value={form.cleaning_checkin_by}
+                onChange={(e) => setForm(f => ({ ...f, cleaning_checkin_by: e.target.value }))}
+                className="w-full h-[44px] px-4 rounded-[10px] bg-ios-bg text-[17px] text-ios-text"
+              >
+                <option value="">— Qui ? —</option>
+                {members.map((m) => (
+                  <option key={m.id} value={m.full_name}>{m.full_name}</option>
+                ))}
+              </select>
+            )}
+          </div>
+
+          {/* Ménage à la sortie */}
+          <div className="space-y-2">
+            <label className="flex items-center justify-between min-h-[44px] cursor-pointer">
+              <span className="text-[17px] text-ios-text">🧹 Ménage à la sortie</span>
+              <input
+                type="checkbox"
+                className="ios-toggle"
+                checked={form.cleaning_checkout}
+                onChange={(e) => setForm(f => ({ ...f, cleaning_checkout: e.target.checked, cleaning_checkout_by: e.target.checked ? f.cleaning_checkout_by : '' }))}
+              />
+            </label>
+            {form.cleaning_checkout && (
+              <select
+                value={form.cleaning_checkout_by}
+                onChange={(e) => setForm(f => ({ ...f, cleaning_checkout_by: e.target.value }))}
+                className="w-full h-[44px] px-4 rounded-[10px] bg-ios-bg text-[17px] text-ios-text"
+              >
+                <option value="">— Qui ? —</option>
+                {members.map((m) => (
+                  <option key={m.id} value={m.full_name}>{m.full_name}</option>
+                ))}
+              </select>
+            )}
+          </div>
+
+          {/* Lits à faire */}
+          <div className="space-y-2">
+            <label className="flex items-center justify-between min-h-[44px] cursor-pointer">
+              <span className="text-[17px] text-ios-text">🛏️ Lits à faire</span>
+              <input
+                type="checkbox"
+                className="ios-toggle"
+                checked={form.beds_to_make}
+                onChange={(e) => setForm(f => ({ ...f, beds_to_make: e.target.checked, beds_to_make_by: e.target.checked ? f.beds_to_make_by : '' }))}
+              />
+            </label>
+            {form.beds_to_make && (
+              <select
+                value={form.beds_to_make_by}
+                onChange={(e) => setForm(f => ({ ...f, beds_to_make_by: e.target.value }))}
+                className="w-full h-[44px] px-4 rounded-[10px] bg-ios-bg text-[17px] text-ios-text"
+              >
+                <option value="">— Qui ? —</option>
+                {members.map((m) => (
+                  <option key={m.id} value={m.full_name}>{m.full_name}</option>
+                ))}
+              </select>
+            )}
+          </div>
+
           <TextArea label="Notes" value={form.notes} onChange={(e) => setForm(f => ({ ...f, notes: e.target.value }))} rows={3} />
           <Button type="submit" fullWidth>Créer la réservation</Button>
         </form>
