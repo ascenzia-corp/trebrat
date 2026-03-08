@@ -9,6 +9,7 @@ import Badge from '../components/ui/Badge';
 import Button from '../components/ui/Button';
 import Spinner from '../components/ui/Spinner';
 import { TextArea } from '../components/ui/Input';
+import Input from '../components/ui/Input';
 import { useReservation, useReservations } from '../hooks/useReservations';
 import { useTasks } from '../hooks/useTasks';
 import { supabase } from '../lib/supabase';
@@ -24,27 +25,26 @@ function InspectionTab({
 }: {
   type: InspectionType;
   items: InspectionItem[];
-  onNavigate: () => void;
+  onNavigate: (inspectorName?: string) => void;
 }) {
   const okCount = items.filter(i => i.status === 'ok').length;
   const issueCount = items.filter(i => i.status !== 'ok').length;
-  const inspectorName = items.find(i => i.inspector_name)?.inspector_name;
+  const existingName = items.find(i => i.inspector_name)?.inspector_name;
   const creator = items.find(i => i.creator)?.creator;
-  const displayName = inspectorName || creator?.full_name;
+  const displayName = existingName || creator?.full_name;
+  const [name, setName] = useState(displayName || '');
 
   return (
     <div className="space-y-3">
-      {displayName && (
-        <div className="flex items-center gap-2 text-[14px] text-ios-text-secondary">
-          <div className="w-7 h-7 rounded-full bg-ios-primary/10 flex items-center justify-center text-ios-primary text-[12px] font-bold">
-            {displayName.charAt(0).toUpperCase()}
-          </div>
-          <span>Réalisé par <strong className="text-ios-text">{displayName}</strong></span>
-        </div>
-      )}
+      <Input
+        label="Réalisé par"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="Nom de l'inspecteur"
+      />
 
       {items.length === 0 ? (
-        <Button fullWidth onClick={onNavigate}>
+        <Button fullWidth onClick={() => onNavigate(name)}>
           Démarrer l'état des lieux {type === 'checkin' ? "d'entrée" : 'de sortie'}
         </Button>
       ) : (
@@ -53,7 +53,7 @@ function InspectionTab({
             <Badge variant="success">{okCount} OK</Badge>
             {issueCount > 0 && <Badge variant="warning">{issueCount} remarque{issueCount > 1 ? 's' : ''}</Badge>}
           </div>
-          <Button variant="secondary" fullWidth onClick={onNavigate}>
+          <Button variant="secondary" fullWidth onClick={() => onNavigate(name)}>
             Voir / Modifier
           </Button>
         </div>
@@ -219,13 +219,13 @@ export default function ReservationDetailPage() {
               <InspectionTab
                 type="checkin"
                 items={checkinItems}
-                onNavigate={() => navigate(`/inspection/${reservation.id}/checkin`)}
+                onNavigate={(name) => navigate(`/inspection/${reservation.id}/checkin${name ? `?inspector=${encodeURIComponent(name)}` : ''}`)}
               />
             ) : (
               <InspectionTab
                 type="checkout"
                 items={checkoutItems}
-                onNavigate={() => navigate(`/inspection/${reservation.id}/checkout`)}
+                onNavigate={(name) => navigate(`/inspection/${reservation.id}/checkout${name ? `?inspector=${encodeURIComponent(name)}` : ''}`)}
               />
             )}
           </Card>

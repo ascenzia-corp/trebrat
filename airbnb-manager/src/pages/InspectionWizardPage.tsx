@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Camera, ChevronLeft, ChevronRight, X, Check, AlertTriangle, ShoppingCart } from 'lucide-react';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
@@ -23,12 +23,13 @@ export default function InspectionWizardPage() {
   const { reservationId, inspectionType } = useParams<{ reservationId: string; inspectionType: string }>();
   const type = (inspectionType === 'checkin' ? 'checkin' : 'checkout') as InspectionType;
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { rooms, loading: roomsLoading } = useRooms();
   const user = useAuthStore((s) => s.user);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [roomStates, setRoomStates] = useState<Record<string, RoomState>>({});
   const [saving, setSaving] = useState(false);
-  const [inspectorName, setInspectorName] = useState('');
+  const [inspectorName, setInspectorName] = useState(searchParams.get('inspector') || '');
   const [lightboxPhoto, setLightboxPhoto] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const savingRef = useRef(false);
@@ -200,19 +201,6 @@ export default function InspectionWizardPage() {
           />
         </div>
       </div>
-
-      {/* Inspector name */}
-      {currentIndex === 0 && (
-        <div className="px-4 pt-3 bg-white border-b border-ios-separator/30">
-          <Input
-            label="Réalisé par"
-            value={inspectorName}
-            onChange={(e) => setInspectorName(e.target.value)}
-            placeholder="Nom de l'inspecteur"
-          />
-          <div className="h-3" />
-        </div>
-      )}
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto ios-scroll px-4 py-4 space-y-4">
