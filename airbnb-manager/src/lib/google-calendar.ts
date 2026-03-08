@@ -115,10 +115,12 @@ export async function syncReservationToCalendar(reservation: Reservation): Promi
       const data = await response.json();
       return data.id;
     }
-    console.warn('Google Calendar sync failed:', response?.status);
+    const errorBody = await response?.text().catch(() => 'no body');
+    console.error('Google Calendar sync failed:', response?.status, errorBody);
+    console.error('Event payload sent:', JSON.stringify(event, null, 2));
     return null;
-  } catch {
-    console.error('Failed to sync with Google Calendar');
+  } catch (err) {
+    console.error('Failed to sync with Google Calendar', err);
     return null;
   }
 }
