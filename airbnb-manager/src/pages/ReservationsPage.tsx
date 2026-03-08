@@ -13,6 +13,8 @@ import { TextArea } from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import { useReservations } from '../hooks/useReservations';
 import { createAutoTasks } from '../hooks/useTasks';
+import { syncReservationToCalendar } from '../lib/google-calendar';
+import { supabase } from '../lib/supabase';
 import type { Reservation, ReservationStatus } from '../types';
 import { format, parseISO, isToday } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -159,6 +161,12 @@ export default function ReservationsPage() {
         status: 'upcoming',
       });
       await createAutoTasks(reservation.id, reservation.guest_name, reservation.checkin_date, reservation.checkout_date);
+      // Sync to Google Calendar (non-blocking)
+      syncReservationToCalendar(reservation).then(eventId => {
+        if (eventId) {
+          supabase.from('reservations').update({ google_event_id: eventId }).eq('id', reservation.id);
+        }
+      }).catch(() => {});
       setShowForm(false);
       setForm({ guest_name: '', guest_phone: '', guest_count: '', checkin_date: '', checkin_time: '16:00', checkout_date: '', checkout_time: '11:00', notes: '' });
     } catch (err) {

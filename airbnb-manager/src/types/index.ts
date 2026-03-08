@@ -36,6 +36,7 @@ export interface Room {
   floor: string;
 }
 
+export type InspectionType = 'checkin' | 'checkout';
 export type InspectionStatus = 'ok' | 'issue' | 'needs_purchase';
 
 export interface InspectionItem {
@@ -44,10 +45,12 @@ export interface InspectionItem {
   room_id: string;
   comment: string | null;
   status: InspectionStatus;
+  inspection_type: InspectionType;
   created_at: string;
   created_by: string;
   room?: Room;
   photos?: InspectionPhoto[];
+  creator?: UserProfile;
 }
 
 export interface InspectionPhoto {

@@ -27,7 +27,7 @@ function AppRoutes() {
         <Route path="/reservations" element={<ReservationsPage />} />
         <Route path="/reservations/:id" element={<ReservationDetailPage />} />
         <Route path="/inspection" element={<InspectionListPage />} />
-        <Route path="/inspection/:reservationId" element={<InspectionWizardPage />} />
+        <Route path="/inspection/:reservationId/:inspectionType" element={<InspectionWizardPage />} />
         <Route path="/tasks" element={<TasksPage />} />
         <Route path="/purchases" element={<PurchasesPage />} />
         <Route path="/team" element={role === 'owner' ? <TeamPage /> : <Navigate to={getDefaultRoute()} />} />

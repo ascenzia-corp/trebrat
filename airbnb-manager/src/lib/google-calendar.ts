@@ -1,8 +1,9 @@
 import { supabase } from './supabase';
 import type { Reservation } from '../types';
 
+const CALENDAR_ID = 'c_b90baba6f4a6b60fa843f7d6571b8b6acde9fdc906939592f53a86e33c325d77@group.calendar.google.com';
+
 interface CalendarSettings {
-  google_calendar_id: string;
   google_access_token: string;
   google_refresh_token: string;
 }
@@ -17,11 +18,15 @@ async function getCalendarSettings(): Promise<CalendarSettings | null> {
 
 export async function syncReservationToCalendar(reservation: Reservation): Promise<string | null> {
   const settings = await getCalendarSettings();
-  if (!settings?.google_calendar_id || !settings?.google_access_token) return null;
+  if (!settings?.google_access_token) return null;
 
   const event = {
     summary: `Location: ${reservation.guest_name}`,
-    description: `Locataire: ${reservation.guest_name}\nPersonnes: ${reservation.guest_count || 'N/A'}\nTéléphone: ${reservation.guest_phone || 'N/A'}`,
+    description: [
+      `Locataire: ${reservation.guest_name}`,
+      `Personnes: ${reservation.guest_count || 'N/A'}`,
+      `Téléphone: ${reservation.guest_phone || 'N/A'}`,
+    ].join('\n'),
     start: {
       dateTime: `${reservation.checkin_date}T${reservation.checkin_time}:00`,
       timeZone: 'Europe/Paris',
@@ -33,7 +38,7 @@ export async function syncReservationToCalendar(reservation: Reservation): Promi
   };
 
   try {
-    const calendarId = encodeURIComponent(settings.google_calendar_id);
+    const calendarId = encodeURIComponent(CALENDAR_ID);
     let response: Response;
 
     if (reservation.google_event_id) {
@@ -66,6 +71,7 @@ export async function syncReservationToCalendar(reservation: Reservation): Promi
       const data = await response.json();
       return data.id;
     }
+    console.warn('Google Calendar sync failed:', response.status);
     return null;
   } catch {
     console.error('Failed to sync with Google Calendar');
@@ -75,9 +81,9 @@ export async function syncReservationToCalendar(reservation: Reservation): Promi
 
 export async function deleteCalendarEvent(eventId: string): Promise<void> {
   const settings = await getCalendarSettings();
-  if (!settings?.google_calendar_id || !settings?.google_access_token) return;
+  if (!settings?.google_access_token) return;
 
-  const calendarId = encodeURIComponent(settings.google_calendar_id);
+  const calendarId = encodeURIComponent(CALENDAR_ID);
   await fetch(
     `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/${eventId}`,
     {

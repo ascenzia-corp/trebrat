@@ -12,9 +12,53 @@ import { TextArea } from '../components/ui/Input';
 import { useReservation, useReservations } from '../hooks/useReservations';
 import { useTasks } from '../hooks/useTasks';
 import { supabase } from '../lib/supabase';
-import type { InspectionItem } from '../types';
+import { deleteCalendarEvent } from '../lib/google-calendar';
+import type { InspectionItem, InspectionType } from '../types';
 import { format, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
+
+function InspectionTab({
+  type,
+  items,
+  onNavigate,
+}: {
+  type: InspectionType;
+  items: InspectionItem[];
+  onNavigate: () => void;
+}) {
+  const okCount = items.filter(i => i.status === 'ok').length;
+  const issueCount = items.filter(i => i.status !== 'ok').length;
+  const creator = items.find(i => i.creator)?.creator;
+
+  return (
+    <div className="space-y-3">
+      {creator && (
+        <div className="flex items-center gap-2 text-[14px] text-ios-text-secondary">
+          <div className="w-7 h-7 rounded-full bg-ios-primary/10 flex items-center justify-center text-ios-primary text-[12px] font-bold">
+            {creator.full_name.charAt(0).toUpperCase()}
+          </div>
+          <span>Réalisé par <strong className="text-ios-text">{creator.full_name}</strong></span>
+        </div>
+      )}
+
+      {items.length === 0 ? (
+        <Button fullWidth onClick={onNavigate}>
+          Démarrer l'état des lieux {type === 'checkin' ? "d'entrée" : 'de sortie'}
+        </Button>
+      ) : (
+        <div>
+          <div className="flex gap-3 mb-3">
+            <Badge variant="success">{okCount} OK</Badge>
+            {issueCount > 0 && <Badge variant="warning">{issueCount} remarque{issueCount > 1 ? 's' : ''}</Badge>}
+          </div>
+          <Button variant="secondary" fullWidth onClick={onNavigate}>
+            Voir / Modifier
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function ReservationDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -22,7 +66,9 @@ export default function ReservationDetailPage() {
   const { reservation, loading, setReservation } = useReservation(id);
   const { update, remove } = useReservations();
   const { tasks } = useTasks({ reservationId: id });
-  const [inspectionItems, setInspectionItems] = useState<InspectionItem[]>([]);
+  const [checkinItems, setCheckinItems] = useState<InspectionItem[]>([]);
+  const [checkoutItems, setCheckoutItems] = useState<InspectionItem[]>([]);
+  const [inspectionTab, setInspectionTab] = useState<InspectionType>('checkin');
   const [notes, setNotes] = useState('');
 
   useEffect(() => {
@@ -31,8 +77,15 @@ export default function ReservationDetailPage() {
 
   useEffect(() => {
     if (!id) return;
-    supabase.from('inspection_items').select('*, room:rooms(*)').eq('reservation_id', id)
-      .then(({ data }) => setInspectionItems((data as InspectionItem[]) || []));
+    supabase
+      .from('inspection_items')
+      .select('*, room:rooms(*), creator:user_profiles!inspection_items_created_by_fkey(*)')
+      .eq('reservation_id', id)
+      .then(({ data }) => {
+        const items = (data as InspectionItem[]) || [];
+        setCheckinItems(items.filter(i => i.inspection_type === 'checkin'));
+        setCheckoutItems(items.filter(i => i.inspection_type === 'checkout'));
+      });
   }, [id]);
 
   if (loading || !reservation) return <div className="flex items-center justify-center h-full"><Spinner /></div>;
@@ -45,6 +98,9 @@ export default function ReservationDetailPage() {
 
   const handleDelete = async () => {
     if (confirm('Supprimer cette réservation ?')) {
+      if (reservation.google_event_id) {
+        deleteCalendarEvent(reservation.google_event_id).catch(() => {});
+      }
       await remove(reservation.id);
       navigate('/reservations');
     }
@@ -55,9 +111,6 @@ export default function ReservationDetailPage() {
       update(reservation.id, { notes });
     }
   };
-
-  const okCount = inspectionItems.filter(i => i.status === 'ok').length;
-  const issueCount = inspectionItems.filter(i => i.status !== 'ok').length;
 
   return (
     <div className="flex flex-col h-full">
@@ -136,23 +189,42 @@ export default function ReservationDetailPage() {
             )}
           </Card>
 
-          {/* Inspection */}
+          {/* Inspection with tabs */}
           <Card>
             <h3 className="text-[13px] font-medium text-ios-text-secondary uppercase tracking-wide mb-3">État des lieux</h3>
-            {inspectionItems.length === 0 ? (
-              <Button fullWidth onClick={() => navigate(`/inspection/${reservation.id}`)}>
-                Démarrer l'état des lieux
-              </Button>
+
+            {/* Tab switcher */}
+            <div className="flex bg-gray-200 rounded-lg p-0.5 mb-4">
+              <button
+                onClick={() => setInspectionTab('checkin')}
+                className={`flex-1 py-2 rounded-md text-[14px] font-medium transition-colors ${
+                  inspectionTab === 'checkin' ? 'bg-white text-ios-text shadow-sm' : 'text-ios-text-secondary'
+                }`}
+              >
+                Entrée
+              </button>
+              <button
+                onClick={() => setInspectionTab('checkout')}
+                className={`flex-1 py-2 rounded-md text-[14px] font-medium transition-colors ${
+                  inspectionTab === 'checkout' ? 'bg-white text-ios-text shadow-sm' : 'text-ios-text-secondary'
+                }`}
+              >
+                Sortie
+              </button>
+            </div>
+
+            {inspectionTab === 'checkin' ? (
+              <InspectionTab
+                type="checkin"
+                items={checkinItems}
+                onNavigate={() => navigate(`/inspection/${reservation.id}/checkin`)}
+              />
             ) : (
-              <div>
-                <div className="flex gap-3 mb-3">
-                  <Badge variant="success">{okCount} OK</Badge>
-                  {issueCount > 0 && <Badge variant="warning">{issueCount} remarque{issueCount > 1 ? 's' : ''}</Badge>}
-                </div>
-                <Button variant="secondary" fullWidth onClick={() => navigate(`/inspection/${reservation.id}`)}>
-                  Voir / Modifier
-                </Button>
-              </div>
+              <InspectionTab
+                type="checkout"
+                items={checkoutItems}
+                onNavigate={() => navigate(`/inspection/${reservation.id}/checkout`)}
+              />
             )}
           </Card>
 

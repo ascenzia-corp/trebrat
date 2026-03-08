@@ -10,12 +10,11 @@ import Modal from '../components/ui/Modal';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import { usePurchases } from '../hooks/usePurchases';
-import { useAuthStore, useIsOwner } from '../stores/authStore';
+import { useAuthStore } from '../stores/authStore';
 import { uploadPhoto } from '../lib/image-utils';
 import { supabase } from '../lib/supabase';
 
 export default function PurchasesPage() {
-  const isOwner = useIsOwner();
   const user = useAuthStore((s) => s.user);
   const [tab, setTab] = useState<'pending' | 'done'>('pending');
   const { purchases, loading, update, create } = usePurchases({ purchased: tab === 'done' });
@@ -164,15 +163,14 @@ export default function PurchasesPage() {
         )}
       </PageContainer>
 
-      {(isOwner || useAuthStore.getState().profile?.role === 'maintenance') && (
-        <button
-          onClick={() => setShowForm(true)}
-          className="fixed bottom-[calc(83px+var(--sab,0px)+16px)] right-4 w-14 h-14 bg-ios-primary text-white rounded-full shadow-lg flex items-center justify-center active:scale-95 transition-transform z-30"
-          aria-label="Ajouter un achat"
-        >
-          <Plus size={28} />
-        </button>
-      )}
+      <button
+        onClick={() => setShowForm(true)}
+        className="fixed right-4 w-14 h-14 bg-ios-primary text-white rounded-full shadow-lg flex items-center justify-center active:scale-95 transition-transform z-50"
+        style={{ bottom: 'calc(65px + var(--sab, 0px) + 16px)' }}
+        aria-label="Ajouter un achat"
+      >
+        <Plus size={28} />
+      </button>
 
       <Modal open={showForm} onClose={() => setShowForm(false)} title="Nouvel achat">
         <form onSubmit={handleCreate} className="space-y-4">

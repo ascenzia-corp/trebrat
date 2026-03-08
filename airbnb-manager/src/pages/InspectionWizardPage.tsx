@@ -9,7 +9,7 @@ import { useRooms } from '../hooks/useRooms';
 import { useAuthStore } from '../stores/authStore';
 import { supabase } from '../lib/supabase';
 import { uploadPhoto } from '../lib/image-utils';
-import type { InspectionStatus, InspectionItem, InspectionPhoto } from '../types';
+import type { InspectionStatus, InspectionType, InspectionItem, InspectionPhoto } from '../types';
 
 interface RoomState {
   comment: string;
@@ -20,7 +20,8 @@ interface RoomState {
 }
 
 export default function InspectionWizardPage() {
-  const { reservationId } = useParams<{ reservationId: string }>();
+  const { reservationId, inspectionType } = useParams<{ reservationId: string; inspectionType: string }>();
+  const type = (inspectionType === 'checkin' ? 'checkin' : 'checkout') as InspectionType;
   const navigate = useNavigate();
   const { rooms, loading: roomsLoading } = useRooms();
   const user = useAuthStore((s) => s.user);
@@ -34,7 +35,7 @@ export default function InspectionWizardPage() {
   // Load existing inspection data
   useEffect(() => {
     if (!reservationId || rooms.length === 0) return;
-    supabase.from('inspection_items').select('*, photos:inspection_photos(*)').eq('reservation_id', reservationId)
+    supabase.from('inspection_items').select('*, photos:inspection_photos(*)').eq('reservation_id', reservationId).eq('inspection_type', type)
       .then(({ data }) => {
         if (!data) return;
         const states: Record<string, RoomState> = {};
@@ -49,7 +50,7 @@ export default function InspectionWizardPage() {
         }
         setRoomStates(states);
       });
-  }, [reservationId, rooms]);
+  }, [reservationId, rooms, type]);
 
   if (roomsLoading) return <div className="flex items-center justify-center h-screen"><Spinner /></div>;
   if (rooms.length === 0) return null;
@@ -113,6 +114,7 @@ export default function InspectionWizardPage() {
             room_id: room.id,
             comment: rs.comment || null,
             status: rs.status,
+            inspection_type: type,
             created_by: user.id,
           }).select().single();
           itemId = data?.id;
@@ -180,7 +182,7 @@ export default function InspectionWizardPage() {
           </button>
           <div className="text-center">
             <h1 className="text-[17px] font-semibold">{currentRoom.name}</h1>
-            <p className="text-[13px] text-ios-text-secondary">{currentRoom.floor} — {currentIndex + 1}/{rooms.length}</p>
+            <p className="text-[13px] text-ios-text-secondary">{type === 'checkin' ? 'Entrée' : 'Sortie'} — {currentRoom.floor} — {currentIndex + 1}/{rooms.length}</p>
           </div>
           <div className="w-11" />
         </div>
