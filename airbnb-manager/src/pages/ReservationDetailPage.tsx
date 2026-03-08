@@ -9,39 +9,46 @@ import Badge from '../components/ui/Badge';
 import Button from '../components/ui/Button';
 import Spinner from '../components/ui/Spinner';
 import { TextArea } from '../components/ui/Input';
-import Input from '../components/ui/Input';
 import { useReservation, useReservations } from '../hooks/useReservations';
 import { useTasks } from '../hooks/useTasks';
+import { useTeam } from '../hooks/useTeam';
 import { supabase } from '../lib/supabase';
 import { deleteCalendarEvent } from '../lib/google-calendar';
-import type { InspectionItem, InspectionType } from '../types';
+import type { InspectionItem, InspectionType, UserProfile } from '../types';
 import { format, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 function InspectionTab({
   type,
   items,
+  members,
   onNavigate,
 }: {
   type: InspectionType;
   items: InspectionItem[];
+  members: UserProfile[];
   onNavigate: (inspectorName?: string) => void;
 }) {
   const okCount = items.filter(i => i.status === 'ok').length;
   const issueCount = items.filter(i => i.status !== 'ok').length;
   const existingName = items.find(i => i.inspector_name)?.inspector_name;
-  const creator = items.find(i => i.creator)?.creator;
-  const displayName = existingName || creator?.full_name;
-  const [name, setName] = useState(displayName || '');
+  const [name, setName] = useState(existingName || '');
 
   return (
     <div className="space-y-3">
-      <Input
-        label="Réalisé par"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        placeholder="Nom de l'inspecteur"
-      />
+      <div>
+        <label className="block text-[13px] text-ios-text-secondary font-medium uppercase tracking-wide mb-1">Réalisé par</label>
+        <select
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="w-full h-[44px] px-4 rounded-[10px] bg-ios-bg text-[17px] text-ios-text"
+        >
+          <option value="">— Choisir un inspecteur —</option>
+          {members.map((m) => (
+            <option key={m.id} value={m.full_name}>{m.full_name}</option>
+          ))}
+        </select>
+      </div>
 
       {items.length === 0 ? (
         <Button fullWidth onClick={() => onNavigate(name)}>
@@ -68,6 +75,7 @@ export default function ReservationDetailPage() {
   const { reservation, loading, setReservation } = useReservation(id);
   const { update, remove } = useReservations();
   const { tasks } = useTasks({ reservationId: id });
+  const { members } = useTeam();
   const [checkinItems, setCheckinItems] = useState<InspectionItem[]>([]);
   const [checkoutItems, setCheckoutItems] = useState<InspectionItem[]>([]);
   const [inspectionTab, setInspectionTab] = useState<InspectionType>('checkin');
@@ -219,12 +227,14 @@ export default function ReservationDetailPage() {
               <InspectionTab
                 type="checkin"
                 items={checkinItems}
+                members={members}
                 onNavigate={(name) => navigate(`/inspection/${reservation.id}/checkin${name ? `?inspector=${encodeURIComponent(name)}` : ''}`)}
               />
             ) : (
               <InspectionTab
                 type="checkout"
                 items={checkoutItems}
+                members={members}
                 onNavigate={(name) => navigate(`/inspection/${reservation.id}/checkout${name ? `?inspector=${encodeURIComponent(name)}` : ''}`)}
               />
             )}
