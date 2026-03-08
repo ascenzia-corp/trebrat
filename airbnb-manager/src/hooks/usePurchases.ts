@@ -33,8 +33,12 @@ export function usePurchases(filters?: { purchased?: boolean }) {
   };
 
   const update = async (id: string, updates: Partial<Purchase>) => {
+    setPurchases((prev) => prev.map((p) => (p.id === id ? { ...p, ...updates } : p)));
     const { error } = await supabase.from('purchases').update(updates).eq('id', id);
-    if (error) throw error;
+    if (error) {
+      await fetch();
+      throw error;
+    }
   };
 
   return { purchases, loading, refresh: fetch, create, update };

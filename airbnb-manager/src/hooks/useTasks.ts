@@ -37,8 +37,12 @@ export function useTasks(filters?: { reservationId?: string; assignedTo?: string
   };
 
   const update = async (id: string, updates: Partial<Task>) => {
+    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, ...updates } : t)));
     const { error } = await supabase.from('tasks').update(updates).eq('id', id);
-    if (error) throw error;
+    if (error) {
+      await fetch();
+      throw error;
+    }
   };
 
   const remove = async (id: string) => {
