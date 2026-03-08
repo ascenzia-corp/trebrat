@@ -28,6 +28,7 @@ export default function InspectionWizardPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [roomStates, setRoomStates] = useState<Record<string, RoomState>>({});
   const [saving, setSaving] = useState(false);
+  const [inspectorName, setInspectorName] = useState('');
   const [lightboxPhoto, setLightboxPhoto] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const savingRef = useRef(false);
@@ -47,6 +48,9 @@ export default function InspectionWizardPage() {
             purchaseItem: '',
             existingItemId: item.id,
           };
+          if (item.inspector_name && !inspectorName) {
+            setInspectorName(item.inspector_name);
+          }
         }
         setRoomStates(states);
       });
@@ -107,6 +111,7 @@ export default function InspectionWizardPage() {
           await supabase.from('inspection_items').update({
             comment: rs.comment || null,
             status: rs.status,
+            inspector_name: inspectorName || null,
           }).eq('id', itemId);
         } else {
           const { data } = await supabase.from('inspection_items').insert({
@@ -116,6 +121,7 @@ export default function InspectionWizardPage() {
             status: rs.status,
             inspection_type: type,
             created_by: user.id,
+            inspector_name: inspectorName || null,
           }).select().single();
           itemId = data?.id;
         }
@@ -194,6 +200,19 @@ export default function InspectionWizardPage() {
           />
         </div>
       </div>
+
+      {/* Inspector name */}
+      {currentIndex === 0 && (
+        <div className="px-4 pt-3 bg-white border-b border-ios-separator/30">
+          <Input
+            label="Réalisé par"
+            value={inspectorName}
+            onChange={(e) => setInspectorName(e.target.value)}
+            placeholder="Nom de l'inspecteur"
+          />
+          <div className="h-3" />
+        </div>
+      )}
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto ios-scroll px-4 py-4 space-y-4">

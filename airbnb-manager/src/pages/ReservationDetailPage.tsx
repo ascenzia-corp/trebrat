@@ -28,16 +28,18 @@ function InspectionTab({
 }) {
   const okCount = items.filter(i => i.status === 'ok').length;
   const issueCount = items.filter(i => i.status !== 'ok').length;
+  const inspectorName = items.find(i => i.inspector_name)?.inspector_name;
   const creator = items.find(i => i.creator)?.creator;
+  const displayName = inspectorName || creator?.full_name;
 
   return (
     <div className="space-y-3">
-      {creator && (
+      {displayName && (
         <div className="flex items-center gap-2 text-[14px] text-ios-text-secondary">
           <div className="w-7 h-7 rounded-full bg-ios-primary/10 flex items-center justify-center text-ios-primary text-[12px] font-bold">
-            {creator.full_name.charAt(0).toUpperCase()}
+            {displayName.charAt(0).toUpperCase()}
           </div>
-          <span>Réalisé par <strong className="text-ios-text">{creator.full_name}</strong></span>
+          <span>Réalisé par <strong className="text-ios-text">{displayName}</strong></span>
         </div>
       )}
 

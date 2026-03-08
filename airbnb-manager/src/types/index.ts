@@ -48,6 +48,7 @@ export interface InspectionItem {
   inspection_type: InspectionType;
   created_at: string;
   created_by: string;
+  inspector_name: string | null;
   room?: Room;
   photos?: InspectionPhoto[];
   creator?: UserProfile;
