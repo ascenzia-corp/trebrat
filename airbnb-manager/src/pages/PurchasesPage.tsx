@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { ShoppingCart, Camera, Check, Plus } from 'lucide-react';
+import { ShoppingCart, Camera, Plus } from 'lucide-react';
 import NavBar from '../components/layout/NavBar';
 import PageContainer from '../components/layout/PageContainer';
 import Card from '../components/ui/Card';
@@ -110,21 +110,23 @@ export default function PurchasesPage() {
                     )}
                   </div>
 
-                  {!purchase.purchased ? (
-                    <button
-                      onClick={() => handlePurchase(purchase.id)}
-                      className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-ios-success/10 text-ios-success"
-                      aria-label="Marquer comme acheté"
-                    >
-                      <Check size={22} />
-                    </button>
-                  ) : (
-                    <div className="text-right">
-                      {purchase.cost != null && (
-                        <p className="text-[17px] font-semibold">{purchase.cost.toFixed(2)} €</p>
+                  <button
+                    onClick={() => !purchase.purchased && handlePurchase(purchase.id)}
+                    className="min-w-[44px] min-h-[44px] flex items-center justify-center"
+                    aria-label="Marquer comme acheté"
+                  >
+                    <span className={`flex items-center justify-center w-6 h-6 rounded-md border-2 transition-all duration-200 ${
+                      purchase.purchased
+                        ? 'bg-[#34C759] border-[#34C759]'
+                        : 'border-gray-300 bg-white'
+                    }`}>
+                      {purchase.purchased && (
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                          <path d="M3 7.5L5.5 10L11 4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
                       )}
-                    </div>
-                  )}
+                    </span>
+                  </button>
                 </div>
 
                 {purchase.purchased && (

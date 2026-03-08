@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import type { Purchase } from '../types';
 
 export function usePurchases(filters?: { purchased?: boolean }) {
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [loading, setLoading] = useState(true);
+  const skipRealtimeUntil = useRef(0);
 
   const fetch = useCallback(async () => {
     setLoading(true);
@@ -21,7 +22,10 @@ export function usePurchases(filters?: { purchased?: boolean }) {
     fetch();
     const channel = supabase
       .channel('purchases')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'purchases' }, () => fetch())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'purchases' }, () => {
+        if (Date.now() < skipRealtimeUntil.current) return;
+        fetch();
+      })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [fetch]);
@@ -33,9 +37,11 @@ export function usePurchases(filters?: { purchased?: boolean }) {
   };
 
   const update = async (id: string, updates: Partial<Purchase>) => {
+    skipRealtimeUntil.current = Date.now() + 2000;
     setPurchases((prev) => prev.map((p) => (p.id === id ? { ...p, ...updates } : p)));
     const { error } = await supabase.from('purchases').update(updates).eq('id', id);
     if (error) {
+      skipRealtimeUntil.current = 0;
       await fetch();
       throw error;
     }

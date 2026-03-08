@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import type { Task } from '../types';
 
 export function useTasks(filters?: { reservationId?: string; assignedTo?: string; assignedRole?: string; type?: string; status?: string }) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
+  const skipRealtimeUntil = useRef(0);
 
   const fetch = useCallback(async () => {
     setLoading(true);
@@ -25,7 +26,10 @@ export function useTasks(filters?: { reservationId?: string; assignedTo?: string
     fetch();
     const channel = supabase
       .channel('tasks')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, () => fetch())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, () => {
+        if (Date.now() < skipRealtimeUntil.current) return;
+        fetch();
+      })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [fetch]);
@@ -37,9 +41,11 @@ export function useTasks(filters?: { reservationId?: string; assignedTo?: string
   };
 
   const update = async (id: string, updates: Partial<Task>) => {
+    skipRealtimeUntil.current = Date.now() + 2000;
     setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, ...updates } : t)));
     const { error } = await supabase.from('tasks').update(updates).eq('id', id);
     if (error) {
+      skipRealtimeUntil.current = 0;
       await fetch();
       throw error;
     }

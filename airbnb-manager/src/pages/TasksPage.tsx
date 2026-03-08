@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CheckSquare, Plus, Circle, CheckCircle2, Clock } from 'lucide-react';
+import { CheckSquare, Plus } from 'lucide-react';
 import NavBar from '../components/layout/NavBar';
 import PageContainer from '../components/layout/PageContainer';
 import Card from '../components/ui/Card';
@@ -156,13 +156,17 @@ export default function TasksPage() {
                       className="mt-0.5 min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2 -my-2"
                       aria-label={task.status === 'done' ? 'Marquer non fait' : 'Marquer fait'}
                     >
-                      {task.status === 'done' ? (
-                        <CheckCircle2 size={24} className="text-ios-success" />
-                      ) : task.status === 'in_progress' ? (
-                        <Clock size={24} className="text-ios-warning" />
-                      ) : (
-                        <Circle size={24} className="text-ios-separator" />
-                      )}
+                      <span className={`flex items-center justify-center w-6 h-6 rounded-md border-2 transition-all duration-200 ${
+                        task.status === 'done'
+                          ? 'bg-[#34C759] border-[#34C759]'
+                          : 'border-gray-300 bg-white'
+                      }`}>
+                        {task.status === 'done' && (
+                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                            <path d="M3 7.5L5.5 10L11 4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        )}
+                      </span>
                     </button>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
