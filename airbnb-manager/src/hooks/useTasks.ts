@@ -8,7 +8,7 @@ export function useTasks(filters?: { reservationId?: string; assignedTo?: string
 
   const fetch = useCallback(async () => {
     setLoading(true);
-    let query = supabase.from('tasks').select('*, assignee:user_profiles!tasks_assigned_to_fkey(*)').order('due_date', { ascending: true });
+    let query = supabase.from('tasks').select('*').order('due_date', { ascending: true });
 
     if (filters?.reservationId) query = query.eq('reservation_id', filters.reservationId);
     if (filters?.assignedTo) query = query.eq('assigned_to', filters.assignedTo);

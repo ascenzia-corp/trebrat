@@ -8,7 +8,7 @@ export function usePurchases(filters?: { purchased?: boolean }) {
 
   const fetch = useCallback(async () => {
     setLoading(true);
-    let query = supabase.from('purchases').select('*, purchaser:user_profiles!purchases_purchased_by_fkey(*)').order('created_at', { ascending: false });
+    let query = supabase.from('purchases').select('*').order('created_at', { ascending: false });
 
     if (filters?.purchased !== undefined) query = query.eq('purchased', filters.purchased);
 
