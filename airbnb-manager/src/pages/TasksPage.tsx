@@ -77,12 +77,16 @@ export default function TasksPage() {
   };
 
   const toggleStatus = async (taskId: string, current: TaskStatus) => {
-    const next: TaskStatus = current === 'todo' ? 'in_progress' : current === 'in_progress' ? 'done' : 'todo';
-    await update(taskId, {
-      status: next,
-      completed_at: next === 'done' ? new Date().toISOString() : null,
-    });
-    if (navigator.vibrate) navigator.vibrate(10);
+    const next: TaskStatus = current === 'done' ? 'todo' : 'done';
+    try {
+      await update(taskId, {
+        status: next,
+        completed_at: next === 'done' ? new Date().toISOString() : null,
+      });
+      if (navigator.vibrate) navigator.vibrate(10);
+    } catch (err) {
+      console.error('Failed to update task:', err);
+    }
   };
 
   const overdueTasks = tasks.filter(t => t.status !== 'done' && t.due_date && isPast(parseISO(t.due_date)));
